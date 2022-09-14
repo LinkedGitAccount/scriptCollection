@@ -1,20 +1,24 @@
 <?php
 //add this script to functions.php in wordpress theme file editor
-add_action('init', 'use_jquery_from_google');
-
-function use_jquery_from_google () {
-	if (is_admin()) {
-		return;
-	}
-
-	global $wp_scripts;
-	if (isset($wp_scripts->registered['jquery']->ver)) {
-		$ver = $wp_scripts->registered['jquery']->ver;
-                $ver = str_replace("-wp", "", $ver);
+// Custom Sccript - Load Jquery from Google CDN
+if (!is_admin()) {
+	$url = 'http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js';
+	$test_url = @fopen($url, 'r');
+	if ($test_url !== false) {
+		function load_external_jQuery()
+		{
+			wp_deregister_script('jquery');
+			wp_register_script('jquery', 'http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js');
+			wp_enqueue_script('jquery');
+		}
+		add_action('wp_enqueue_scripts', 'load_external_jQuery');
 	} else {
-		$ver = '1.12.4';
+		function load_local_jQuery()
+		{
+			wp_deregister_script('jquery');
+			wp_register_script('jquery', get_bloginfo('template_url') . '/js/jquery-1.11.1.min.js', __FILE__, false, '1.11.1', true);
+			wp_enqueue_script('jquery');
+		}
+		add_action('wp_enqueue_scripts', 'load_local_jQuery');
 	}
-
-	wp_deregister_script('jquery');
-	wp_register_script('jquery', "//ajax.googleapis.com/ajax/libs/jquery/$ver/jquery.min.js", false, $ver);
 }
